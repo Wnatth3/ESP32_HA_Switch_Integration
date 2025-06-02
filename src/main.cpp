@@ -1,34 +1,34 @@
 
 #include <WiFi.h>
 #include <ArduinoHA.h>
-// #include <Button2.h>
+#include <Button2.h>
 
-#define ledPin LED_BUILTIN
-// #define btnPin   0
-// #define btnAName "btnA"
+#define ledPin   LED_BUILTIN
+#define btnPin   0
+#define haBtnName "LedBtn"
 
-// Button2 button;
+Button2 ledBtn;
 
-#define ssid     "IXORA"
-#define password "Dark1331"
+#define ssid     "your_ssid"  // replace with your WiFi SSID
+#define password "your_password"  // replace with your WiFi password
 
-#define BROKER_ADDR     IPAddress(192, 168, 0, 81)
-#define BROKER_USERNAME "mqttuser"  // replace with your credentials
-#define BROKER_PASSWORD "Berry1911"
+#define mqttBrokerIp IPAddress(192, 168, 1, 0)  // replace with your MQTT broker IP address
+#define mqttUser     "your_mqtt_user"  // replace with your credentials
+#define mqttPassword "your_mqtt_password"  // replace with your credentials
 
 WiFiClient client;
 HADevice   device;
 HAMqtt     mqtt(client, device);
 
-// HADeviceTrigger toggleBtnA(HADeviceTrigger::ButtonShortPressType, btnAName);
+HADeviceTrigger toggleLedBtn(HADeviceTrigger::ButtonShortPressType, haBtnName);
 
-// void tap(Button2& btn) {
-//     Serial.println("tap");
-//     toggleBtnA.trigger();
-//     digitalWrite(ledPin, !digitalRead(ledPin));
-// }
+void tap(Button2& btn) {
+    Serial.println("tap");
+    toggleLedBtn.trigger();
+    digitalWrite(ledPin, !digitalRead(ledPin));  // Uncomment this line to toggle the LED while offline
+}
 
-HASwitch ledSw("myLedSw"); // "myledSw" is a part of MQTT topic that will be used to control the switch
+HASwitch ledSw("myLedSw");  // "myledSw" is a part of MQTT topic that will be used to control the switch
 
 void onSwitchCommand(bool state, HASwitch* sender) {
     digitalWrite(ledPin, (state ? HIGH : LOW));
@@ -40,8 +40,8 @@ void setup() {
     pinMode(ledPin, OUTPUT);
     digitalWrite(ledPin, LOW);
 
-    // button.begin(btnPin);
-    // button.setTapHandler(tap);
+    ledBtn.begin(btnPin);
+    ledBtn.setTapHandler(tap);
 
     byte mac[6];
     WiFi.macAddress(mac);
@@ -52,18 +52,15 @@ void setup() {
         delay(500);
         Serial.print(".");
     }
-    // // optional device's details
-    // device.setName("myESP32");
-    // device.setSoftwareVersion("1.0.0");
 
     // handle switch state
-    ledSw.setName("My LED"); // Device name
+    ledSw.setName("My LED");  // Device name
     ledSw.onCommand(onSwitchCommand);
 
-    mqtt.begin(BROKER_ADDR, BROKER_USERNAME, BROKER_PASSWORD);
+    mqtt.begin(mqttBrokerIp, mqttUser, mqttPassword);
 }
 
 void loop() {
     mqtt.loop();
-    // button.loop();
+    ledBtn.loop();
 }
