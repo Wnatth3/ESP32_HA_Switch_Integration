@@ -28,7 +28,7 @@ HAMqtt     mqtt(client, device);
 //     digitalWrite(ledPin, !digitalRead(ledPin));
 // }
 
-HASwitch ledSw("myLedSw");
+HASwitch ledSw("myLedSw"); // "myledSw" is a part of MQTT topic that will be used to control the switch
 
 void onSwitchCommand(bool state, HASwitch* sender) {
     digitalWrite(ledPin, (state ? HIGH : LOW));
