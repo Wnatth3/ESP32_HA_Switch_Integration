@@ -12,7 +12,7 @@ Button2 ledBtn;
 #define ssid     "your_ssid"  // replace with your WiFi SSID
 #define password "your_password"  // replace with your WiFi password
 
-#define mqttBrokerIp IPAddress(192, 168, 1, 0)  // replace with your MQTT broker IP address
+#define mqttBrokerIp IPAddress(192,168,1,0)  // replace with your MQTT broker IP address
 #define mqttUser     "your_mqtt_user"  // replace with your credentials
 #define mqttPassword "your_mqtt_password"  // replace with your credentials
 
@@ -20,15 +20,14 @@ WiFiClient client;
 HADevice   device;
 HAMqtt     mqtt(client, device);
 
-HADeviceTrigger toggleLedBtn(HADeviceTrigger::ButtonShortPressType, haBtnName);
+HASwitch ledSw("myLedSw");  // "myledSw" is a part of MQTT topic that will be used to control the switch
+HADeviceTrigger toggleLedBtn(HADeviceTrigger::ButtonShortPressType, haBtnName); // You have to add automation in Home Assistant to handle this trigger
 
-void tap(Button2& btn) {
+void toggleLed(Button2& btn) {
     Serial.println("tap");
     toggleLedBtn.trigger();
     digitalWrite(ledPin, !digitalRead(ledPin));  // Uncomment this line to toggle the LED while offline
 }
-
-HASwitch ledSw("myLedSw");  // "myledSw" is a part of MQTT topic that will be used to control the switch
 
 void onSwitchCommand(bool state, HASwitch* sender) {
     digitalWrite(ledPin, (state ? HIGH : LOW));
@@ -41,7 +40,7 @@ void setup() {
     digitalWrite(ledPin, LOW);
 
     ledBtn.begin(btnPin);
-    ledBtn.setTapHandler(tap);
+    ledBtn.setTapHandler(toggleLed);
 
     byte mac[6];
     WiFi.macAddress(mac);
