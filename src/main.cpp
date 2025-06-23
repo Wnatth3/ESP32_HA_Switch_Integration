@@ -3,6 +3,7 @@
 #include <WiFi.h>
 #include <ArduinoHA.h>
 #include <Button2.h>
+#include <TickTwo.h>
 
 /*
   To include with credentials. This is what you need to do:
@@ -22,7 +23,7 @@
 
 #define ledPin    23
 #define btnPin    17
-#define haBtnName "LedBtn" // "LedBtn" is a unique Trigger name that will be used in Home Assistant to trigger automations.
+#define haBtnName "LedBtn"  // "LedBtn" is a unique Trigger name that will be used in Home Assistant to trigger automations.
 
 #define ledPin1    19
 #define btnPin1    16
@@ -40,19 +41,24 @@ Button2 ledBtn;
 Button2 ledBtn1;
 Button2 ledBtn2;
 
-HASwitch ledSw("LedSw");    // "ledSw" is a unique ID as a part of MQTT topic that will be used to control the switch.
-HASwitch ledSw1("LedSw1");  
-HASwitch ledSw2("LedSw2");  
+HASwitch ledSw("LedSw");  // "ledSw" is a unique ID as a part of MQTT topic that will be used to control the switch.
+HASwitch ledSw1("LedSw1");
+HASwitch ledSw2("LedSw2");
 
-HADeviceTrigger toggleLedBtn(HADeviceTrigger::ButtonShortPressType, haBtnName);    // You have to add automation in Home Assistant to handle this trigger
-HADeviceTrigger toggleLedBtn1(HADeviceTrigger::ButtonShortPressType, haBtnName1);  
-HADeviceTrigger toggleLedBtn2(HADeviceTrigger::ButtonShortPressType, haBtnName2);  
+HADeviceTrigger toggleLedBtn(HADeviceTrigger::ButtonShortPressType, haBtnName);  // You have to add automation in Home Assistant to handle this trigger
+HADeviceTrigger toggleLedBtn1(HADeviceTrigger::ButtonShortPressType, haBtnName1);
+HADeviceTrigger toggleLedBtn2(HADeviceTrigger::ButtonShortPressType, haBtnName2);
+
+void checkAvailability();
+TickTwo tCheckAvailability(checkAvailability, 5000, 0, MILLIS);  // Check the device availability every 5 seconds
+
+void checkAvailability() { device.setAvailability(device.isAvailable()); }
 
 void toggleLed(Button2& btn) {
     if (btn == ledBtn) {
         Serial.println("btn clicked");
         toggleLedBtn.trigger();
-        digitalWrite(ledPin, !digitalRead(ledPin));
+        digitalWrite(ledPin, !digitalRead(ledPin)); 
     } else if (btn == ledBtn1) {
         Serial.println("btn1 clicked");
         toggleLedBtn1.trigger();
@@ -112,7 +118,12 @@ void setup() {
     ledSw2.setName("LED Switch2");  // Switch name
     ledSw2.onCommand(onSwitchCommand);
 
+    device.enableSharedAvailability();  // Enable shared availability for the device
+    device.enableLastWill();            // Enable Last Will and Testament (LWT) feature
+
     mqtt.begin(mqttBrokerIp, mqttUser, mqttPassword);
+    tCheckAvailability.start(); 
+
 }
 
 void loop() {
@@ -120,4 +131,5 @@ void loop() {
     ledBtn.loop();
     ledBtn1.loop();
     ledBtn2.loop();
+    tCheckAvailability.update();  
 }
