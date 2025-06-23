@@ -21,6 +21,15 @@
 */
 #include "Secret.h"
 
+#define activeHigh  // comment this line to use activeLowRelay
+#ifdef activeHigh
+#define turnOn  HIGH  // Active high
+#define turnOff LOW
+#else
+#define turnOn  LOW  // Active low
+#define turnOff HIGH
+#endif
+
 #define ledPin    23
 #define btnPin    17
 #define haBtnName "LedBtn"  // "LedBtn" is a unique Trigger name that will be used in Home Assistant to trigger automations.
@@ -58,25 +67,25 @@ void toggleLed(Button2& btn) {
     if (btn == ledBtn) {
         Serial.println("btn clicked");
         toggleLedBtn.trigger();
-        digitalWrite(ledPin, !digitalRead(ledPin)); 
+        digitalWrite(ledPin, digitalRead(ledPin) ? turnOff : turnOn); 
     } else if (btn == ledBtn1) {
         Serial.println("btn1 clicked");
         toggleLedBtn1.trigger();
-        digitalWrite(ledPin1, !digitalRead(ledPin1));
+        digitalWrite(ledPin1, digitalRead(ledPin1) ? turnOff : turnOn);
     } else if (btn == ledBtn2) {
         Serial.println("btn2 clicked");
         toggleLedBtn2.trigger();
-        digitalWrite(ledPin2, !digitalRead(ledPin2));
+        digitalWrite(ledPin2, digitalRead(ledPin2) ? turnOff : turnOn);
     }
 }
 
 void onSwitchCommand(bool state, HASwitch* sender) {
     if (sender == &ledSw) {
-        digitalWrite(ledPin, (state ? HIGH : LOW));
+        digitalWrite(ledPin, (state ? turnOn : turnOff));
     } else if (sender == &ledSw1) {
-        digitalWrite(ledPin1, (state ? HIGH : LOW));
+        digitalWrite(ledPin1, (state ? turnOn : turnOff));
     } else if (sender == &ledSw2) {
-        digitalWrite(ledPin2, (state ? HIGH : LOW));
+        digitalWrite(ledPin2, (state ? turnOn : turnOff));
     }
 
     sender->setState(state);  // report state back to the Home Assistant
@@ -85,11 +94,11 @@ void onSwitchCommand(bool state, HASwitch* sender) {
 void setup() {
     Serial.begin(115200);
     pinMode(ledPin, OUTPUT);
-    digitalWrite(ledPin, LOW);
+    digitalWrite(ledPin, turnOff);
     pinMode(ledPin1, OUTPUT);
-    digitalWrite(ledPin1, LOW);
+    digitalWrite(ledPin1, turnOff);
     pinMode(ledPin2, OUTPUT);
-    digitalWrite(ledPin2, LOW);
+    digitalWrite(ledPin2, turnOff);
 
     ledBtn.begin(btnPin);
     ledBtn.setTapHandler(toggleLed);
