@@ -58,7 +58,7 @@ HADeviceTrigger toggleLedBtn(HADeviceTrigger::ButtonShortPressType, haBtnName); 
 HADeviceTrigger toggleLedBtn1(HADeviceTrigger::ButtonShortPressType, haBtnName1);
 HADeviceTrigger toggleLedBtn2(HADeviceTrigger::ButtonShortPressType, haBtnName2);
 
-void checkAvailability();
+void    checkAvailability();
 TickTwo tCheckAvailability(checkAvailability, 5000, 0, MILLIS);  // Check the device availability every 5 seconds
 
 void checkAvailability() { device.setAvailability(device.isAvailable()); }
@@ -67,7 +67,7 @@ void toggleLed(Button2& btn) {
     if (btn == ledBtn) {
         Serial.println("btn clicked");
         toggleLedBtn.trigger();
-        digitalWrite(ledPin, digitalRead(ledPin) ? turnOff : turnOn); 
+        digitalWrite(ledPin, digitalRead(ledPin) ? turnOff : turnOn);
     } else if (btn == ledBtn1) {
         Serial.println("btn1 clicked");
         toggleLedBtn1.trigger();
@@ -128,11 +128,10 @@ void setup() {
     ledSw2.onCommand(onSwitchCommand);
 
     device.enableSharedAvailability();  // Enable shared availability for the device
-    device.enableLastWill();            // Enable Last Will and Testament (LWT) feature
+    device.enableLastWill();            // Enable LWT feature. If device will lose connection, all device types related to it will be marked as offline.
 
     mqtt.begin(mqttBrokerIp, mqttUser, mqttPassword);
-    tCheckAvailability.start(); 
-
+    tCheckAvailability.start();
 }
 
 void loop() {
@@ -140,5 +139,5 @@ void loop() {
     ledBtn.loop();
     ledBtn1.loop();
     ledBtn2.loop();
-    tCheckAvailability.update();  
+    tCheckAvailability.update();
 }
