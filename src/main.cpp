@@ -128,7 +128,7 @@ void setup() {
     ledSw2.onCommand(onSwitchCommand);
 
     device.enableSharedAvailability();  // Enable shared availability for the device
-    device.enableLastWill();            // Enable LWT feature. If device will lose connection, all device types related to it will be marked as offline.
+    // device.enableLastWill(); // (Optional) Enable LWT feature. If device will lose connection, all device types related to it will be marked as offline.
 
     mqtt.begin(mqttBrokerIp, mqttUser, mqttPassword);
     tCheckAvailability.start();
